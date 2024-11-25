@@ -20,70 +20,43 @@ AUDIO_EXTENSIONS = {".wav", ".mp3", ".m4a", ".flac", ".ogg"}
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov"}
 
 
-@app.post("/transcribe_audio/")
-async def transcribe_audio(file: UploadFile = File(...)):
-    file_extension = Path(file.filename).suffix.lower()
-
-    if file_extension not in AUDIO_EXTENSIONS:
-        return {"error": f"Unsupported audio file format: {file_extension}. Supported formats: {AUDIO_EXTENSIONS}"}
-    temp_path = f"temp_audio_{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    try:
-        audio = whisper.load_audio(temp_path)
-        result = model.transcribe(audio)
-        transcription = result["text"]
-
-        # Save transcription to a text file
-        output_file_path = f"{Path(file.filename).stem}_audio_transcription.txt"
-        with open(output_file_path, "w") as transcription_file:
-            transcription_file.write(transcription)
-
-        # Clean up the temporary file
-        Path(temp_path).unlink()
-
-        return {
-            "filename": file.filename,
-            "transcription": transcription,
-            "output_file": output_file_path,
-        }
-    except Exception as e:
-        print(str(e),e)
-        return {"error": str(e)}
-
 # API for video file transcription
-@app.post("/transcribe_video/")
+@app.post("/transcribe/")
 async def transcribe_video(file: UploadFile = File(...)):
-    file_extension = Path(file.filename).suffix.lower()
-    print("inside the function")
-    if file_extension not in VIDEO_EXTENSIONS:
-        return {"error": f"Unsupported video file format: {file_extension}. Supported formats: {VIDEO_EXTENSIONS}"}
-
-    # Save the video file temporarily
-    dirr = os.getcwd()
-    temp_path = f"{dirr}/audios/temp_video_{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    print("file opened")
-
-    # Load and transcribe the audio extracted from the video
     try:
-        print("inside the try")
-        print(temp_path)
+        file_extension = Path(file.filename).suffix.lower()
+        print(f"Received file: {file.filename}, Extension: {file_extension}")
+
+        # if file_extension not in VIDEO_EXTENSIONS:
+        #     return {"error": f"Unsupported video file format: {file_extension}. Supported formats: {VIDEO_EXTENSIONS}"}
+
+        # Create the audios directory if it doesn't exist
+        audios_dir = os.path.join(os.getcwd(), 'audios')
+        os.makedirs(audios_dir, exist_ok=True)
+
+        # Save the video file temporarily
+        temp_path = os.path.join(audios_dir, f"temp_video_{file.filename}")
+        print(f"Attempting to save file to: {temp_path}")
+
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        print("File saved successfully")
+
+        # Load and transcribe the audio extracted from the video
         audio = whisper.load_audio(file=temp_path)
-        print("audio loaded succes")
+        print("Audio loaded successfully")
+        
         result = model.transcribe(audio)
         transcription = result["text"]
-        print("transcription done")
+        print("Transcription completed")
 
         # Save transcription to a text file
-        output_file_path = f"{Path(file.filename).stem}_video_transcription.txt"
+        output_file_path = os.path.join(os.getcwd(), f"{Path(file.filename).stem}_video_transcription.txt")
         with open(output_file_path, "w") as transcription_file:
             transcription_file.write(transcription)
 
         # Clean up the temporary file
-        Path(temp_path).unlink()
+        os.unlink(temp_path)
 
         return {
             "filename": file.filename,
@@ -91,7 +64,7 @@ async def transcribe_video(file: UploadFile = File(...)):
             "output_file": output_file_path,
         }
     except Exception as e:
-        print(str(e),e)
+        print(f"Error in transcription: {str(e)}")
         return {"error": str(e)}
     
 if __name__ == "__main__":
