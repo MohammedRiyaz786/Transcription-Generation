@@ -27,10 +27,7 @@ async def transcribe_video(file: UploadFile = File(...)):
         file_extension = Path(file.filename).suffix.lower()
         print(f"Received file: {file.filename}, Extension: {file_extension}")
 
-        # if file_extension not in VIDEO_EXTENSIONS:
-        #     return {"error": f"Unsupported video file format: {file_extension}. Supported formats: {VIDEO_EXTENSIONS}"}
 
-        # Create the audios directory if it doesn't exist
         audios_dir = os.path.join(os.getcwd(), 'audios')
         os.makedirs(audios_dir, exist_ok=True)
 
@@ -50,10 +47,6 @@ async def transcribe_video(file: UploadFile = File(...)):
         transcription = result["text"]
         print("Transcription completed")
 
-        # # Save transcription to a text file
-        # output_file_path = os.path.join(os.getcwd(), f"{Path(file.filename).stem}_video_transcription.txt")
-        # with open(output_file_path, "w") as transcription_file:
-        #     transcription_file.write(transcription)
 
         # Clean up the temporary file
         os.unlink(temp_path)
