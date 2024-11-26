@@ -42,7 +42,7 @@ async def transcribe_video(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
         print("File saved successfully")
 
-        # Load and transcribe the audio extracted from the video
+        
         audio = whisper.load_audio(file=temp_path)
         print("Audio loaded successfully")
         
