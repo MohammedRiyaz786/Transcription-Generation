@@ -50,10 +50,10 @@ async def transcribe_video(file: UploadFile = File(...)):
         transcription = result["text"]
         print("Transcription completed")
 
-        # Save transcription to a text file
-        output_file_path = os.path.join(os.getcwd(), f"{Path(file.filename).stem}_video_transcription.txt")
-        with open(output_file_path, "w") as transcription_file:
-            transcription_file.write(transcription)
+        # # Save transcription to a text file
+        # output_file_path = os.path.join(os.getcwd(), f"{Path(file.filename).stem}_video_transcription.txt")
+        # with open(output_file_path, "w") as transcription_file:
+        #     transcription_file.write(transcription)
 
         # Clean up the temporary file
         os.unlink(temp_path)
@@ -61,7 +61,7 @@ async def transcribe_video(file: UploadFile = File(...)):
         return {
             "filename": file.filename,
             "transcription": transcription,
-            "output_file": output_file_path,
+            #"output_file": output_file_path,
         }
     except Exception as e:
         print(f"Error in transcription: {str(e)}")
